@@ -1,0 +1,3 @@
+dist/
+node_modules/
+firebase-admin-servicekey.json
