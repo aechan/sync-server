@@ -1,4 +1,4 @@
-![logo image](https://raw.githubusercontent.com/aechan/sync-server/development/assets/logo.gif)
+<img src="https://github.com/aechan/sync-server/raw/development/assets/logo-dark.png" width=300></img>
 
 Sync-Server
 ============
