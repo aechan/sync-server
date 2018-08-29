@@ -3,6 +3,10 @@ import { resolve } from 'dns';
 const serviceAccount = require('../firebase-admin-serviceaccount.json');
 export type SnapItem = { val: any, key: string };
 
+/**
+ * Converts a Google snapshot to simple typescript array
+ * @param snapshot snapshot to convert to array
+ */
 export const snapshotToArray = (snapshot: firebase.database.DataSnapshot): SnapItem[] => {
     var returnArr: SnapItem[] = [];
 
@@ -68,14 +72,45 @@ export class FirebaseConnector {
      * whether it is valid or not.
      * @param token ID token recieved from http request
      */
-    public static verifyUser(token: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
+    public static verifyUser(token: string): Promise<{valid: boolean, decoded: firebase.auth.DecodedIdToken}> {
+        return new Promise<{valid: boolean, decoded: firebase.auth.DecodedIdToken}>((resolve, reject) => {
+            if(!this.initCheck()) reject("Firebase was not initialized.");
             firebase.auth().verifyIdToken(token, true).then((decoded) => {
-                resolve(true);
+                resolve({
+                    valid: true,
+                    decoded: decoded
+                });
             }).catch((err) => {
-                resolve(false);
+                resolve({
+                    valid: false,
+                    decoded: undefined
+                });
             });
         });
+    }
+
+    /**
+     * Async handles an user requesting to join a room and
+     * if the request is validated, the user will be assigned to
+     * the relevant room on the firebase database.
+     * @param token user's JWT token from firebase auth.
+     * @returns true if user successfully joined, false if not
+     */
+    public static joinRoom(token: string, roomId: string): Promise<boolean> {
+        return new Promise<boolean>((res, rej) => {
+            this.verifyUser(token).then((resp) => {
+                if(resp.valid) {
+                    firebase.database().ref('/rooms/'+roomId+'/users/').push({
+                        user: resp.decoded.uid
+                    });
+                    res(true);
+                } else {
+                    res(false);
+                }
+            }).catch((err) => {
+                rej(err);
+            });
+        })
     }
 }
 
