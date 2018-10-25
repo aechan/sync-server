@@ -1,4 +1,4 @@
 dist/
 node_modules/
-firebase-admin-servicekey.json
+firebase-admin-serviceaccount.json
 .DS_Store
