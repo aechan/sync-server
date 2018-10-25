@@ -2,7 +2,7 @@
 
 Sync-Server
 ============
-Middleware server for sync that handles synching clients over WebSockets and saving and retrieving data from the Firebase backend.
+Orchestration layer for sync that handles synching clients over WebSockets and saving and retrieving data from the Firebase backend and other APIs.
 ---------
 
 Please read contribution guidelines.
