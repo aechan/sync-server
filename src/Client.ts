@@ -2,24 +2,15 @@ import { Room } from "./Room";
 import ws from 'ws';
 
 export class Client {
-    private room: Room;
+    room: Room;
     private socket: ws;
     private uid: string;
     private username: string;
 
-    public joinRoom(room: Room) {
-        if(this.room !== undefined) {
-            this.leaveRoom();
-        }
-        this.room = room;
-        this.room.addClient(this);
+    constructor(socket:ws) {
+        this.socket = socket;
     }
-
-    public leaveRoom() {
-        this.room.removeClient(this);
-        this.room = undefined;
-    }
-
+    
     get id() {
         return this.uid;
     }
