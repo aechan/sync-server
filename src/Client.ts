@@ -1,26 +1,37 @@
-import { Room } from "./Room";
-import ws from 'ws';
+/*******************************************************
+ * Copyright (C) 2018 Alec Chan - All Rights Reserved
+ * Unauthorized copying of this file,
+ * via any medium is strictly prohibited
+ * Alec Chan <me@alecchan.io> November, 2018
+ *******************************************************/
+import firebaseAdmin from 'firebase-admin';
+import socketIo from 'socket.io';
+import { firebaseConnector } from './FirebaseConnector';
+import { logger } from './Logger';
 
+/**
+ * Represents a client and its data/socket connection
+ */
 export class Client {
-    room: Room;
-    private socket: ws;
-    private uid: string;
-    private username: string;
+    public socketConnection: socketIo.Socket;
+    public uid: string;
+    public name: string;
+    public roomId: string;
 
-    constructor(socket:ws) {
-        this.socket = socket;
-    }
-    
-    get id() {
-        return this.uid;
+    constructor(uid: string, socket: socketIo.Socket) {
+        this.socketConnection = socket;
+        this.uid = uid;
+        this.roomId = '';
     }
 
-    get currentRoom() {
-        return this.room;
+    get json(): {} {
+        return {
+            uid: this.uid,
+            name: this.name
+        };
     }
 
-    get name() {
-        return this.username;
+    get socket(): socketIo.Socket {
+        return this.socketConnection;
     }
-
 }
