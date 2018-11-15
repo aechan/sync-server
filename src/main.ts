@@ -4,9 +4,8 @@
  * via any medium is strictly prohibited
  * Alec Chan <me@alecchan.io> November, 2018
  *******************************************************/
-
 /**
- * Main entry
+ * Entrypoint
  */
 import { Server } from './Server';
 

@@ -7,7 +7,7 @@
 import request from 'request';
 import socketIoClient from 'socket.io-client';
 import { logger } from '../src/Logger';
-import { Server } from '../src/server';
+import { Server } from '../src/Server';
 
 /**
  * Main test runner
