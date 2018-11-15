@@ -1,17 +1,17 @@
 {
-  "name": "sync-express",
-  "version": "1.0.0",
+  "name": "sync-server",
+  "version": "2.0.0",
   "description": "",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "tsc && node dist/main.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Alec Chan",
   "dependencies": {
+    "@types/ascii-art": "^1.4.0",
     "@types/dotenv": "^4.0.3",
+    "ascii-art": "^1.5.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "firebase": "^5.4.1",
@@ -24,6 +24,8 @@
     "@types/ws": "^6.0.1",
     "jest": "^23.5.0",
     "ts-jest": "^23.1.4",
+    "tslint": "^5.11.0",
+    "tslint-microsoft-contrib": "^5.2.1",
     "typescript": "^3.0.1"
   }
 }
