@@ -10,9 +10,11 @@
  * Main entrypoint
  */
 import asciiArt from 'ascii-art';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import firebaseAdmin from 'firebase-admin';
+import fs from 'fs';
 import http from 'http';
 import socketIo from 'socket.io';
 import { Client } from './Client';
@@ -38,9 +40,11 @@ export class Server {
     firebaseConnector.initialize();
 
     this.app = express();
+    this.app.use(cors());
     this.server = new http.Server(this.app);
     this.ws = socketIo(this.server);
     this.rooms = [];
+    this.clients = [];
 
     // for debug
     this.app.get('/rooms/:roomId', (req: express.Request, res: express.Response) => {
@@ -53,11 +57,63 @@ export class Server {
 
     this.app.get('/rooms/', (req: express.Request, res: express.Response) => {
       const token: string = req.param('jwt');
-      firebaseConnector.verifyUser(token).then((val: firebaseAdmin.auth.DecodedIdToken) => {
-        res.send(this.rooms);
-      }).catch((err: string) => {
-        res.send(err);
+      if (token.length === 0 || token === undefined) {
+        res.sendStatus(400).send('Not authenticated');
+
+        return;
+      } else {
+        firebaseConnector.verifyUser(token).then((val: firebaseAdmin.auth.DecodedIdToken) => {
+          res.send(this.rooms.map((value: Room) => { return value.json; }));
+        }).catch((err: string) => {
+          res.send(err);
+        });
+      }
+    });
+
+    this.app.get('/clients/', (req: express.Request, res: express.Response) => {
+      const token: string = req.param('jwt');
+      if (token.length === 0 || token === undefined) {
+        res.sendStatus(400).send('Not authenticated');
+
+        return;
+      } else {
+        firebaseConnector.verifyUser(token).then((val: firebaseAdmin.auth.DecodedIdToken) => {
+          res.send(this.clients.map((value: Client) => { return value.json; }));
+        }).catch((err: string) => {
+          res.send(err);
+        });
+      }
+    });
+
+    this.app.get('/rooms/:roomId/video', (req: express.Request, res: express.Response) => {
+      const room: Room = this.rooms.find((val: Room) => {
+        return req.param('roomId') === val.id;
       });
+
+      if (room === undefined) {
+        res.sendStatus(404);
+      } else {
+        const video: string = room.videoURL;
+        fs.stat(video, (err: NodeJS.ErrnoException, stats: fs.Stats) => {
+          if (err) {
+            logger.error(err.message);
+          }
+          const videoStream: fs.ReadStream = fs.createReadStream(video);
+          videoStream.on('open', () => {
+            res.writeHead(206, {
+              'Content-Range': `bytes ${0}-${stats.size - 1}/${stats.size - 1}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': stats.size - 1,
+                'Content-Type': 'video/mp4'
+            });
+            videoStream.pipe(res);
+          });
+
+          videoStream.on('error', (error: NodeJS.ErrnoException) => {
+            res.end(err);
+          });
+        });
+      }
     });
 
     this.ws.on('connection', (socket: socketIo.Socket) => {
@@ -72,17 +128,30 @@ export class Server {
         });
       });
 
+      socket.on('disconnect', () => {
+        const found: Client = this.clients.find((client: Client) => { return client.socket.id === socket.id; });
+        if (found === undefined) {
+          return;
+        }
+        found.room.removeClient(found);
+        this.clients = this.clients.filter((cli: Client) => {
+          return cli.uid !== found.uid;
+        });
+        logger.info(`Client: ${found.name} disconnected.`);
+      });
+
       socket.on('JoinRoom', (roomId: string) => {
         const client: Client = this.clients.find((c: Client) => c.socket.id === socket.id);
         const room: Room = this.rooms.find((r: Room) => r.id === roomId);
 
-        if (!client) {
+        if (client === undefined) {
           socket.emit('Unauthenticated', 'Authenticate first.');
+          logger.info(`Unauthenticated Request`);
 
           return;
         }
 
-        logger.info(`Request to join room: ${roomId}`);
+        logger.info(`Request to join room: ${roomId}, by client: ${client.name}`);
         socket.leaveAll();
         socket.join(roomId);
 
@@ -98,7 +167,7 @@ export class Server {
 
     this.server.listen(port || process.env.PORT, async () => {
       // this is so stupidly wasteful but ascii art....
-      logger.info(await asciiArt.font('Sync-Server  v2.0', 'Doom', 'magenta').toPromise());
+      logger.info(`\n${await asciiArt.font('Sync-Server  v2.0', 'Doom', 'magenta').toPromise()}`);
       logger.info(`Sync-Server listening on *:${port || process.env.PORT}`);
     });
 

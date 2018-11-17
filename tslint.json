@@ -6,6 +6,9 @@
         "match-default-export-name": false,
         "strict-boolean-expressions": false,
         "no-implicit-dependencies": false,
-        "mocha-no-side-effect-code": false
+        "mocha-no-side-effect-code": false,
+        "no-trailing-whitespace": false,
+        "max-func-body-length": false,
+        "import-name": false
     }
 }
