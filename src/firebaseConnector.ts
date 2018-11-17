@@ -6,8 +6,8 @@
  *******************************************************/
 
 import * as firebase from 'firebase-admin';
-import firebaseAdminServiceaccountJson from './../firebase-admin-serviceaccount.json';
-import { logger } from './Logger.js';
+import * as firebaseAdminServiceaccountJson from './../firebase-admin-serviceaccount.json';
+import { logger } from './logger';
 import { Room } from './Room';
 export type SnapItem = { val: {}; key: string };
 
@@ -39,12 +39,13 @@ export const firebaseConnector: {
         getRooms(): {};
         initCheck(): boolean;
         verifyUser(token: string): Promise<firebase.auth.DecodedIdToken>;
+        getUserInfo(uid: string): Promise<{ imageURL: string; displayName: string }>;
     } = {
     initialized: false,
 
     initialize(): void {
         firebase.initializeApp({
-            credential: firebase.credential.cert(JSON.stringify(firebaseAdminServiceaccountJson)),
+            credential: firebase.credential.cert(<firebase.ServiceAccount>firebaseAdminServiceaccountJson),
             databaseURL: 'https://sync-9192c.firebaseio.com'
         });
         firebaseConnector.initialized = true;
@@ -81,5 +82,14 @@ export const firebaseConnector: {
                 reject(err);
             });
         });
+    },
+
+    async getUserInfo(uid: string): Promise<{ imageURL: string; displayName: string }> {
+        const { displayName, photoURL } = await firebase.auth().getUser(uid);
+
+        return {
+            displayName: displayName,
+            imageURL: photoURL
+        };
     }
 };
