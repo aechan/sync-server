@@ -17,7 +17,7 @@ import firebaseAdmin from 'firebase-admin';
 import http from 'http';
 import socketIo from 'socket.io';
 import { Client } from './Client';
-import { firebaseConnector } from './FirebaseConnector';
+import { firebaseConnector } from './firebaseConnector';
 import { logger } from './logger';
 import { Room } from './Room';
 

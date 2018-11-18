@@ -6,8 +6,8 @@
  *******************************************************/
 import firebaseAdmin from 'firebase-admin';
 import socketIo from 'socket.io';
-import { firebaseConnector } from './FirebaseConnector';
-import { logger } from './Logger';
+import { firebaseConnector } from './firebaseConnector';
+import { logger } from './logger';
 import { Room } from './Room';
 
 /**
