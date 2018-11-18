@@ -14,7 +14,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import firebaseAdmin from 'firebase-admin';
-import fs from 'fs';
 import http from 'http';
 import socketIo from 'socket.io';
 import { Client } from './Client';
@@ -81,37 +80,6 @@ export class Server {
           res.send(this.clients.map((value: Client) => { return value.json; }));
         }).catch((err: string) => {
           res.send(err);
-        });
-      }
-    });
-
-    this.app.get('/rooms/:roomId/video', (req: express.Request, res: express.Response) => {
-      const room: Room = this.rooms.find((val: Room) => {
-        return req.param('roomId') === val.id;
-      });
-
-      if (room === undefined) {
-        res.sendStatus(404);
-      } else {
-        const video: string = room.videoURL;
-        fs.stat(video, (err: NodeJS.ErrnoException, stats: fs.Stats) => {
-          if (err) {
-            logger.error(err.message);
-          }
-          const videoStream: fs.ReadStream = fs.createReadStream(video);
-          videoStream.on('open', () => {
-            res.writeHead(206, {
-              'Content-Range': `bytes ${0}-${stats.size - 1}/${stats.size - 1}`,
-                'Accept-Ranges': 'bytes',
-                'Content-Length': stats.size - 1,
-                'Content-Type': 'video/mp4'
-            });
-            videoStream.pipe(res);
-          });
-
-          videoStream.on('error', (error: NodeJS.ErrnoException) => {
-            res.end(err);
-          });
         });
       }
     });

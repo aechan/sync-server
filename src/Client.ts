@@ -39,12 +39,8 @@ export class Client {
             this.room.chat(data, this);
         });
 
-        this.socket.on('SetVideoURL', (url: string) => {
-            this.room.setRoomVideoURL(url, this);
-        });
-
-        this.socket.on('SetVideoPlaying', (playing: boolean) => {
-            this.room.setRoomPlaying(playing, this);
+        this.socket.on('StateUpdate', (data: { videoURL: string; playing: boolean; time: number }) => {
+            this.room.stateUpdate(data, this);
         });
     }
 
