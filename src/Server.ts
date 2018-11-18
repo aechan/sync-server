@@ -137,10 +137,10 @@ export class Server {
       });
     });
 
-    this.server.listen(port || process.env.PORT, async () => {
+    this.server.listen(process.env.PORT || 3000, async () => {
       // this is so stupidly wasteful but ascii art....
       logger.info(`\n${await asciiArt.font('Sync-Server  v2.0', 'Doom', 'magenta').toPromise()}`);
-      logger.info(`Sync-Server listening on *:${port || process.env.PORT}`);
+      logger.info(`Sync-Server listening on *:${process.env.PORT || 3000}`);
     });
 
     if (callback) {
