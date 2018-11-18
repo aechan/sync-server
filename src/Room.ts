@@ -13,8 +13,7 @@ import { logger } from './logger';
  * Manages a single room and it's clients/sockets
  */
 export class Room {
-    public videoURL: string;
-    public time: number;
+    public state: { videoURL: string; time: number; playing: boolean };
 
     private roomId: string;
     private room: socketIo.Namespace;
@@ -25,7 +24,6 @@ export class Room {
     private name: string;
     private ownerName: string;
     private chatLog: { message: string; client: Client }[];
-    private playing: boolean;
     private syncTimer: NodeJS.Timer;
 
     constructor(roomId: string, roomNSP: socketIo.Namespace) {
@@ -34,14 +32,14 @@ export class Room {
         this.room = roomNSP;
         this.clients = [];
         this.chatLog = [];
-        this.time = 0;
-        this.playing = false;
-        this.videoURL = 'https://media.w3.org/2010/05/sintel/trailer.mp4';
+        this.state = {
+            time: 0,
+            videoURL: '',
+            playing: false
+        };
         this.imageURL = '';
         this.name = '';
-        this.syncTimer = setInterval(() => {
-            this.sync();
-        }, 200);
+        this.syncTimer = setInterval(() => { this.sync(); }, 200);
     }
 
     public addClient(client: Client): void {
@@ -75,27 +73,17 @@ export class Room {
     }
 
     public sync(): void {
-        this.room.emit('Sync', {time: this.time, url: this.videoURL, playing: this.playing});
-    }
-
-    public setRoomVideoURL(url: string, client: Client): void {
-        if (client.uid === this.ownerUID) {
-            this.videoURL = url;
-            this.time = 0;
-            this.playing = false;
-        }
-        this.printState();
-    }
-
-    public setRoomPlaying(playing: boolean, client: Client): void {
-        if (client.uid === this.ownerUID) {
-            this.playing = playing;
-        }
-        this.printState();
+        this.room.emit('Sync', {time: this.state.time, url: this.state.videoURL, playing: this.state.playing});
     }
 
     public setRoomName(name: string, client: Client): void {
         return;
+    }
+
+    public stateUpdate(state: { time: number; videoURL: string; playing: boolean }, client: Client): void {
+        if (client.uid === this.ownerUID) {
+            this.state = state;
+        }
     }
 
     get id(): string {
@@ -106,12 +94,12 @@ export class Room {
         return {
             roomId: this.roomId,
             clients: this.clients.map((val: Client) => { return val.json; }),
-            videoURL: this.videoURL
+            videoURL: this.state.videoURL
         };
     }
 
     private printState(): void {
-        logger.info(`${this.videoURL}, ${this.playing}, ${this.time}`);
+        logger.info(`${this.state}`);
     }
 
     private updateRoomInfo(): void {
