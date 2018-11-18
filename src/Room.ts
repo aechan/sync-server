@@ -73,7 +73,7 @@ export class Room {
     }
 
     public sync(): void {
-        this.room.emit('Sync', {time: this.state.time, url: this.state.videoURL, playing: this.state.playing});
+        this.room.emit('Sync', this.state);
     }
 
     public setRoomName(name: string, client: Client): void {
