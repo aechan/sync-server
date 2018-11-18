@@ -54,6 +54,10 @@ export class Server {
       res.send(room.json);
     });
 
+    this.app.get('/', (req: express.Request, res: express.Response) => {
+      res.send('Hello from Sync.!');
+    });
+
     this.app.get('/rooms/', (req: express.Request, res: express.Response) => {
       const token: string = req.param('jwt');
       if (token.length === 0 || token === undefined) {
