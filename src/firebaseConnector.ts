@@ -6,7 +6,7 @@
  *******************************************************/
 
 import * as firebase from 'firebase-admin';
-import * as firebaseAdminServiceaccountJson from './../firebase-admin-serviceaccount.json';
+import { serviceAccount } from './serviceAccount';
 import { logger } from './logger';
 import { Room } from './Room';
 export type SnapItem = { val: {}; key: string };
@@ -45,7 +45,7 @@ export const firebaseConnector: {
 
     initialize(): void {
         firebase.initializeApp({
-            credential: firebase.credential.cert(<firebase.ServiceAccount>firebaseAdminServiceaccountJson),
+            credential: firebase.credential.cert(<firebase.ServiceAccount>serviceAccount),
             databaseURL: 'https://sync-9192c.firebaseio.com'
         });
         firebaseConnector.initialized = true;
