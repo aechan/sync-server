@@ -9,6 +9,7 @@ import socketIo from 'socket.io';
 import { firebaseConnector } from './firebaseConnector';
 import { logger } from './logger';
 import { Room } from './Room';
+import { constants } from './constants';
 
 /**
  * Represents a client and its data/socket connection
@@ -30,16 +31,16 @@ export class Client {
         firebaseConnector.getUserInfo(this.uid).then((val: { imageURL: string; displayName: string }) => {
             this.imageURL = val.imageURL;
             this.name = val.displayName;
-            this.socketConnection.emit('UserInfoLoaded', this.json);
+            this.socketConnection.emit(constants.userInfoLoaded, this.json);
         }).catch((err: string) => {
             logger.error(err);
         });
 
-        this.socket.on('Chat', (data: string) => {
+        this.socket.on(constants.chat, (data: string) => {
             this.room.chat(data, this);
         });
 
-        this.socket.on('StateUpdate', (data: { videoURL: string; playing: boolean; time: number }) => {
+        this.socket.on(constants.stateUpdate, (data: { videoURL: string; playing: boolean; time: number }) => {
             this.room.stateUpdate(data, this);
         });
     }

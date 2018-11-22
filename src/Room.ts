@@ -8,6 +8,7 @@
 import socketIo from 'socket.io';
 import { Client } from './Client';
 import { logger } from './logger';
+import { constants } from './constants';
 
 /**
  * Manages a single room and it's clients/sockets
@@ -44,7 +45,7 @@ export class Room {
 
     public addClient(client: Client): void {
         this.clients.push(client);
-        client.socket.emit('JoinedRoom', this.json);
+        client.socket.emit(constants.joined, this.json);
         client.roomId = this.roomId;
         client.room = this;
         if (this.ownerUID === client.uid) {
@@ -65,7 +66,7 @@ export class Room {
     }
 
     public chat(message: string, client: Client): void {
-        this.room.emit('Chat', {
+        this.room.emit(constants.chat, {
             message: message,
             client: client.json
         });
@@ -73,7 +74,7 @@ export class Room {
     }
 
     public sync(): void {
-        this.room.emit('Sync', this.state);
+        this.room.emit(constants.sync, this.state);
     }
 
     public setRoomName(name: string, client: Client): void {
@@ -103,12 +104,12 @@ export class Room {
     }
 
     private updateRoomInfo(): void {
-        this.room.emit('RoomInfo', this.json);
+        this.room.emit(constants.roomInfo, this.json);
     }
 
     private updateChatLog(cli: Client): void {
         this.chatLog.forEach((chat: { message: string; client: Client }) => {
-            cli.socket.emit('Chat', {
+            cli.socket.emit(constants.chat, {
                 message: chat.message,
                 client: chat.client.json
             });
